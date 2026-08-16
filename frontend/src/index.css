@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-frambuesa-50: #fdf1f6;
+  --color-frambuesa-500: #e11d74;
+  --color-frambuesa-600: #c11463;
+  --color-mango-400: #fb923c;
+  --color-lima-500: #84cc16;
+  --color-tinta-900: #1c1b29;
+  --color-tinta-600: #4b4a5a;
+  --color-tinta-300: #a3a2b0;
+
+  --font-display: "Sora", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #f8f9fb;
+  color: var(--color-tinta-900);
+}

@@ -1,0 +1,19 @@
+# Compilados
+build/
+.gradle/
+*.class
+
+# IDE
+.idea/
+*.iml
+
+# Credenciales — NUNCA al repositorio
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+bin/
+out/
