@@ -1,5 +1,6 @@
 package com.granizadoexpress.service;
 
+import com.granizadoexpress.dto.PedidoInfoUpdateRequest;
 import com.granizadoexpress.dto.PedidoRequest;
 import com.granizadoexpress.dto.PedidoResponse;
 import com.granizadoexpress.entity.*;
@@ -24,6 +25,10 @@ public class PedidoService {
     private final RecetaRepository recetaRepository;
     private final HistorialInventarioRepository historialRepository;
     private final EmpresaRepository empresaRepository;
+
+    // Estados que ya no pueden modificarse: son estados "finales" del pedido.
+    private static final Set<Pedido.EstadoPedido> ESTADOS_FINALES =
+            EnumSet.of(Pedido.EstadoPedido.ENTREGADO, Pedido.EstadoPedido.CANCELADO);
 
     @Transactional
     public PedidoResponse crear(PedidoRequest request) {
@@ -127,10 +132,126 @@ public class PedidoService {
     }
 
     public PedidoResponse obtener(UUID id) {
+        return aResponse(buscarPropioOFallar(id));
+    }
+
+    /**
+     * Edita los datos "blandos" del pedido (cliente, canal, notas).
+     * No permite tocar los productos/cantidades del pedido para no desincronizar
+     * el inventario ya descontado; para eso hay que cancelar y crear uno nuevo.
+     */
+    @Transactional
+    public PedidoResponse actualizarInfo(UUID id, PedidoInfoUpdateRequest request) {
+        Pedido pedido = buscarPropioOFallar(id);
+
+        if (pedido.getEstado() == Pedido.EstadoPedido.CANCELADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede editar un pedido cancelado");
+        }
+
+        if (request.nombreCliente() != null) {
+            pedido.setNombreCliente(request.nombreCliente());
+        }
+        if (request.canal() != null) {
+            pedido.setCanal(Pedido.CanalPedido.valueOf(request.canal()));
+        }
+        if (request.notas() != null) {
+            pedido.setNotas(request.notas());
+        }
+
+        return aResponse(pedidoRepository.save(pedido));
+    }
+
+    /**
+     * Cambia el estado del pedido siguiendo el flujo natural del negocio:
+     * PENDIENTE -> CONFIRMADO -> EN_PREPARACION -> ENTREGADO, o CANCELADO en cualquier momento
+     * (antes de ENTREGADO). Al cancelar, repone automáticamente el inventario consumido.
+     */
+    @Transactional
+    public PedidoResponse cambiarEstado(UUID id, String nuevoEstadoTexto) {
+        Pedido pedido = buscarPropioOFallar(id);
+
+        Pedido.EstadoPedido nuevoEstado;
+        try {
+            nuevoEstado = Pedido.EstadoPedido.valueOf(nuevoEstadoTexto);
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + nuevoEstadoTexto);
+        }
+
+        if (ESTADOS_FINALES.contains(pedido.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Este pedido ya está " + textoEstado(pedido.getEstado()) + " y no puede cambiar de estado");
+        }
+
+        if (nuevoEstado == Pedido.EstadoPedido.CANCELADO) {
+            reponerInventario(pedido);
+        }
+
+        pedido.setEstado(nuevoEstado);
+        return aResponse(pedidoRepository.save(pedido));
+    }
+
+    /**
+     * "Eliminar" un pedido en realidad lo cancela: repone el inventario que había
+     * descontado y lo marca como CANCELADO, conservando el historial para trazabilidad.
+     */
+    @Transactional
+    public void eliminar(UUID id) {
+        Pedido pedido = buscarPropioOFallar(id);
+
+        if (pedido.getEstado() == Pedido.EstadoPedido.CANCELADO) {
+            return;
+        }
+        if (pedido.getEstado() == Pedido.EstadoPedido.ENTREGADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No se puede eliminar un pedido que ya fue entregado");
+        }
+
+        reponerInventario(pedido);
+        pedido.setEstado(Pedido.EstadoPedido.CANCELADO);
+        pedidoRepository.save(pedido);
+    }
+
+    private void reponerInventario(Pedido pedido) {
+        List<HistorialInventario> salidas = historialRepository
+                .findByPedidoIdAndTipoMovimiento(pedido.getId(), HistorialInventario.TipoMovimiento.SALIDA);
+
+        for (HistorialInventario salida : salidas) {
+            Insumo insumo = insumoRepository.findByIdParaActualizar(salida.getInsumo().getId()).orElse(null);
+            if (insumo == null) continue;
+
+            BigDecimal cantidadAnterior = insumo.getCantidadActual();
+            BigDecimal cantidadPosterior = cantidadAnterior.add(salida.getCantidad());
+
+            insumo.setCantidadActual(cantidadPosterior);
+            insumo.setAlertaStock(cantidadPosterior.compareTo(insumo.getStockMinimo()) < 0);
+            insumoRepository.save(insumo);
+
+            HistorialInventario reverso = HistorialInventario.builder()
+                    .empresa(pedido.getEmpresa())
+                    .insumo(insumo)
+                    .pedido(pedido)
+                    .tipoMovimiento(HistorialInventario.TipoMovimiento.ENTRADA)
+                    .cantidad(salida.getCantidad())
+                    .cantidadAnterior(cantidadAnterior)
+                    .cantidadPosterior(cantidadPosterior)
+                    .motivo("Reposición automática por cancelación de pedido")
+                    .build();
+            historialRepository.save(reverso);
+        }
+    }
+
+    private Pedido buscarPropioOFallar(UUID id) {
         UUID empresaId = SecurityUtils.obtenerEmpresaId();
-        Pedido pedido = pedidoRepository.findByIdAndEmpresaId(id, empresaId)
+        return pedidoRepository.findByIdAndEmpresaId(id, empresaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
-        return aResponse(pedido);
+    }
+
+    private String textoEstado(Pedido.EstadoPedido estado) {
+        return switch (estado) {
+            case ENTREGADO -> "entregado";
+            case CANCELADO -> "cancelado";
+            default -> estado.name().toLowerCase();
+        };
     }
 
     private PedidoResponse aResponse(Pedido pedido) {

@@ -41,66 +41,73 @@ export default function ProductoFormModal({ producto, onClose, onGuardado }) {
     }
   }
 
+  const claseInput =
+    'w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-tinta-100/30 ' +
+    'focus:outline-none focus:ring-2 focus:ring-azul-400 focus:border-transparent transition';
+
   return (
-    <div className="fixed inset-0 bg-tinta-900/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-tinta-900 border border-tinta-700 rounded-xl shadow-2xl shadow-black/40 max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-display font-bold text-lg text-tinta-900">
+          <h3 className="font-display font-bold text-lg text-white">
             {esEdicion ? 'Editar producto' : 'Nuevo producto'}
           </h3>
-          <button onClick={onClose} className="text-tinta-300 hover:text-tinta-600 transition">
+          <button onClick={onClose} className="text-tinta-400 hover:text-white transition">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={manejarSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-tinta-600 mb-1.5">Nombre</label>
+            <label className="block text-sm font-medium text-tinta-100/70 mb-1.5">Nombre</label>
             <input
               type="text"
               value={form.nombre}
               onChange={(e) => actualizarCampo('nombre', e.target.value)}
               required
-              className="w-full rounded-lg border border-tinta-300/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-frambuesa-500"
+              placeholder="Granizado tamarindo"
+              className={claseInput}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-tinta-600 mb-1.5">Descripción</label>
+            <label className="block text-sm font-medium text-tinta-100/70 mb-1.5">Descripción</label>
             <input
               type="text"
               value={form.descripcion}
               onChange={(e) => actualizarCampo('descripcion', e.target.value)}
-              className="w-full rounded-lg border border-tinta-300/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-frambuesa-500"
+              placeholder="12 oz"
+              className={claseInput}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-tinta-600 mb-1.5">Precio</label>
+              <label className="block text-sm font-medium text-tinta-100/70 mb-1.5">Precio</label>
               <input
                 type="number"
                 min="0"
                 value={form.precio}
                 onChange={(e) => actualizarCampo('precio', e.target.value)}
                 required
-                className="w-full rounded-lg border border-tinta-300/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-frambuesa-500"
+                placeholder="5000"
+                className={claseInput}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-tinta-600 mb-1.5">Categoría</label>
+              <label className="block text-sm font-medium text-tinta-100/70 mb-1.5">Categoría</label>
               <input
                 type="text"
                 value={form.categoria}
                 onChange={(e) => actualizarCampo('categoria', e.target.value)}
                 placeholder="Granizados"
-                className="w-full rounded-lg border border-tinta-300/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-frambuesa-500"
+                className={claseInput}
               />
             </div>
           </div>
 
           {error && (
-            <p className="text-sm text-frambuesa-600 bg-frambuesa-50 border border-frambuesa-500/20 rounded-lg px-3 py-2">
+            <p className="text-sm text-frambuesa-500 bg-frambuesa-500/10 border border-frambuesa-500/25 rounded-lg px-3 py-2">
               {error}
             </p>
           )}
@@ -108,7 +115,10 @@ export default function ProductoFormModal({ producto, onClose, onGuardado }) {
           <button
             type="submit"
             disabled={guardando}
-            className="w-full rounded-lg bg-frambuesa-500 text-white font-semibold py-2.5 hover:bg-frambuesa-600 transition disabled:opacity-60"
+            className="w-full rounded-lg bg-gradient-to-b from-azul-600 to-azul-800 text-white font-semibold py-2.5
+                       shadow-[0_8px_24px_-6px_rgba(11,22,51,0.9)] border border-white/10
+                       hover:from-azul-500 hover:to-azul-700
+                       transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {guardando ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Crear producto'}
           </button>

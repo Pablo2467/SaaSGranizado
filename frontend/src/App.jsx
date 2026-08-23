@@ -6,6 +6,10 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Productos from './pages/Productos';
 import Insumos from './pages/Insumos';
+import Pedidos from './pages/Pedidos';
+import Empleados from './pages/Empleados';
+import Suscripcion from './pages/Suscripcion';
+import Ganancias from './pages/Ganancias';
 
 function App() {
   return (
@@ -23,9 +27,40 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="productos" element={<Productos />} />
-            <Route path="insumos" element={<Insumos />} />
-            {/* Más adelante: <Route path="productos" element={<Productos />} /> etc. */}
+            <Route
+              path="productos"
+              element={
+                <RutaProtegida rolesPermitidos={['DUENO', 'ENCARGADO_PRODUCCION']}>
+                  <Productos />
+                </RutaProtegida>
+              }
+            />
+            <Route
+              path="insumos"
+              element={
+                <RutaProtegida rolesPermitidos={['DUENO', 'ENCARGADO_PRODUCCION']}>
+                  <Insumos />
+                </RutaProtegida>
+              }
+            />
+            <Route path="pedidos" element={<Pedidos />} />
+            <Route
+              path="ganancias"
+              element={
+                <RutaProtegida rolesPermitidos={['DUENO', 'ENCARGADO_PRODUCCION']}>
+                  <Ganancias />
+                </RutaProtegida>
+              }
+            />
+            <Route
+              path="empleados"
+              element={
+                <RutaProtegida rolesPermitidos={['DUENO']}>
+                  <Empleados />
+                </RutaProtegida>
+              }
+            />
+            <Route path="suscripcion" element={<Suscripcion />} />
           </Route>
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

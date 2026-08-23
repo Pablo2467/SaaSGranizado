@@ -2,6 +2,8 @@ package com.granizadoexpress.repository;
 
 import com.granizadoexpress.entity.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -20,4 +22,20 @@ public interface PedidoRepository extends JpaRepository<Pedido, UUID> {
 
     //Busca un pedido verificando que pertenezca al local o empresa
     Optional<Pedido> findByIdAndEmpresaId(UUID id, UUID empresaId);
+
+    //Trae pedidos (con sus detalles y productos precargados) para calcular ganancias/estadísticas,
+    //filtrando por los estados que realmente cuentan como venta confirmada.
+    @Query("SELECT DISTINCT p FROM Pedido p " +
+            "LEFT JOIN FETCH p.detalles d " +
+            "LEFT JOIN FETCH d.producto " +
+            "WHERE p.empresa.id = :empresaId " +
+            "AND p.estado IN :estados " +
+            "AND p.createdAt BETWEEN :inicio AND :fin " +
+            "ORDER BY p.createdAt")
+    List<Pedido> findParaEstadisticas(
+            @Param("empresaId") UUID empresaId,
+            @Param("estados") List<Pedido.EstadoPedido> estados,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fin") LocalDateTime fin
+    );
 }

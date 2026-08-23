@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -39,6 +41,10 @@ public class Usuario {
     @Builder.Default
     private Boolean activo = true;
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<UsuarioSabor> sabores = new ArrayList<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -60,6 +66,9 @@ public class Usuario {
     }
 
     public enum RolUsuario {
-        OWNER, ADMIN, CAJERO
+        DUENO,                // Control total: usuarios, planes, ganancias, catálogo.
+        ENCARGADO_PRODUCCION, // Insumos, recetas, inventario. Ve ganancias en solo lectura.
+        OPERADOR_MAQUINA,     // Atiende uno o varios sabores; marca pedidos en preparación/listos.
+        CAJERO                // Vendedor: toma el pedido y lo marca como entregado.
     }
 }

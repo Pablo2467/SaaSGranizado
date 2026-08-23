@@ -10,7 +10,6 @@ import java.util.UUID;
 @Repository
 public interface HistorialInventarioRepository extends JpaRepository<HistorialInventario, UUID> {
 
-    // Kárdex completo de un insumo — para ver todo su historial
     List<HistorialInventario> findByEmpresaIdAndInsumoIdOrderByCreatedAtDesc(
             UUID empresaId,
             UUID insumoId
@@ -18,4 +17,7 @@ public interface HistorialInventarioRepository extends JpaRepository<HistorialIn
 
     // Todos los movimientos de inventario de una empresa
     List<HistorialInventario> findByEmpresaIdOrderByCreatedAtDesc(UUID empresaId);
+
+    // Movimientos de un pedido específico y tipo (para poder revertir el consumo al cancelar)
+    List<HistorialInventario> findByPedidoIdAndTipoMovimiento(UUID pedidoId, HistorialInventario.TipoMovimiento tipoMovimiento);
 }

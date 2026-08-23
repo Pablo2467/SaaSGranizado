@@ -10,9 +10,10 @@ import java.util.UUID;
 @Repository
 public interface SuscripcionRepository extends JpaRepository<Suscripcion, UUID> {
 
-    // Busca la suscripción activa de una empresa
     Optional<Suscripcion> findByEmpresaIdAndEstado(
             UUID empresaId,
             Suscripcion.EstadoSuscripcion estado
     );
+
+    Optional<Suscripcion> findTopByEmpresaIdOrderByCreatedAtDesc(UUID empresaId);
 }

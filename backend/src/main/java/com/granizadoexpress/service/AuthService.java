@@ -7,9 +7,11 @@ import com.granizadoexpress.dto.UsuarioResponse;
 import com.granizadoexpress.entity.Empresa;
 import com.granizadoexpress.entity.Suscripcion;
 import com.granizadoexpress.entity.Usuario;
+import com.granizadoexpress.entity.UsuarioSabor;
 import com.granizadoexpress.repository.EmpresaRepository;
 import com.granizadoexpress.repository.SuscripcionRepository;
 import com.granizadoexpress.repository.UsuarioRepository;
+import com.granizadoexpress.repository.UsuarioSaborRepository;
 import com.granizadoexpress.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Lógica de negocio de autenticación. El controlador solo va a
@@ -35,6 +38,7 @@ public class AuthService {
     private final EmpresaRepository empresaRepository;
     private final UsuarioRepository usuarioRepository;
     private final SuscripcionRepository suscripcionRepository;
+    private final UsuarioSaborRepository usuarioSaborRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -72,14 +76,15 @@ public class AuthService {
                 .build();
         suscripcionRepository.save(suscripcion);
 
-        // OWNER está fijo aquí, nunca viene del request: es la única
+        // DUENO está fijo aquí, nunca viene del request: es la única
         // forma de asegurarnos de que nadie se auto-asigne otro rol.
+        // Es quien luego crea a los demás empleados (encargado, operadores, cajeros).
         Usuario usuario = Usuario.builder()
                 .empresa(empresa)
                 .nombre(request.nombreUsuario())
                 .email(request.email())
                 .passwordHash(passwordEncoder.encode(request.password()))
-                .rol(Usuario.RolUsuario.OWNER)
+                .rol(Usuario.RolUsuario.DUENO)
                 .build();
         usuario = usuarioRepository.save(usuario);
 
@@ -127,11 +132,16 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
+        List<String> sabores = usuarioSaborRepository.findByUsuarioId(usuario.getId())
+                .stream().map(UsuarioSabor::getSabor).toList();
+
         return new UsuarioResponse(
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getEmail(),
                 usuario.getRol().name(),
+                usuario.getActivo(),
+                sabores,
                 usuario.getEmpresa().getId(),
                 usuario.getEmpresa().getNombre()
         );

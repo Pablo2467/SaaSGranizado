@@ -8,7 +8,7 @@ public record LoginRequest(
         @Email(message = "El correo no tiene un formato valido")
         String email,
 
-        @NotBlank(message = "La contrasñea es obligatoria")
+        @NotBlank(message = "La contraseña es obligatoria")
         String password
 ) {
 }
