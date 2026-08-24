@@ -93,7 +93,7 @@ spring.datasource.username=postgres
 spring.datasource.password=postgres123
 ```
 
-Ajusta usuario/contraseña ahí si tu Postgres local usa otros. **No hace falta crear tablas a mano** — Flyway corre automáticamente las 11 migraciones (`db/migration/V1__...` a `V11__...`) la primera vez que arranca el backend.
+Ajusta usuario/contraseña ahí si tu Postgres local usa otros. **No hace falta crear tablas a mano** Flyway corre automáticamente las 11 migraciones (`db/migration/V1__...` a `V11__...`) la primera vez que arranca el backend.
 
 ### 2. Backend
 
@@ -102,10 +102,6 @@ cd backend
 ./gradlew bootRun          # Mac/Linux
 .\gradlew.bat bootRun       # Windows PowerShell
 ```
-
-Queda escuchando en `http://localhost:8080`.
-
-> ⚠️ Si vas a editar `build.gradle`, siempre corre `./gradlew clean bootRun` después (o "Reload Gradle Project" + reiniciar si usas el botón Run del IDE) — ver la sección de [errores ya resueltos](#errores-ya-resueltos-para-no-repetirlos) más abajo.
 
 ### 3. Frontend
 
@@ -240,15 +236,6 @@ Base URL: `http://localhost:8080`. Todos los endpoints salvo `/auth/registro` y 
 | GET | `/estadisticas/ganancias/resumen` | — | Totales de hoy / semana / mes / año |
 | GET | `/estadisticas/ganancias/serie` | `periodo` (`dia`\|`semana`\|`mes`\|`anio`), `anio`, `mes` (opcionales) | Serie de puntos para el gráfico y el calendario |
 | GET | `/estadisticas/ganancias/por-producto` | mismos que arriba | Ranking de ventas por producto en ese periodo |
-
----
-
-## Decisiones de diseño importantes
-
-- **Multi-tenant por `empresa_id`**: cada consulta a la base de datos filtra por la empresa del usuario autenticado (obtenida del JWT vía `SecurityUtils.obtenerEmpresaId()`). Nunca se confía en un `empresaId` que venga del cliente.
-- **"Eliminar" pedido = cancelar, no borrar**: se conserva el registro histórico y se repone el inventario, en vez de un DELETE físico — así el kárdex de insumos siempre cuadra.
-- **Ganancias con datos reales, no simulados**: `EstadisticasService` calcula todo a partir de los pedidos reales (filtrando por estado y rango de fechas), no hay datos hardcodeados.
-- **Paleta de marca**: azul (`azul-*`) como color principal, `frambuesa` (rosa) reservado para estados de error/peligro/cancelado — no se usa como color de marca.
 
 ---
 
