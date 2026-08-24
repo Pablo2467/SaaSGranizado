@@ -1,4 +1,4 @@
-# Granizado Express
+# Granizado Saas
 
 SaaS de gestión para granizaderos: productos, insumos (inventario), pedidos, empleados, suscripción y reportes de ganancias. Multi-tenant (cada empresa ve solo sus propios datos).
 
