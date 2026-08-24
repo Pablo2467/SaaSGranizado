@@ -58,3 +58,10 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Sin esto, Spring no puede leer los nombres de los parámetros de los métodos
+// (@PathVariable UUID id, @RequestParam String periodo, etc.) por reflexión,
+// y cualquier endpoint con un {id} en la URL responde 500.
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-parameters'
+}

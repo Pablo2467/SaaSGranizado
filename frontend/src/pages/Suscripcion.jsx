@@ -120,8 +120,8 @@ export default function Suscripcion() {
       <div className="mt-6 max-w-lg bg-tinta-900 rounded-xl border border-tinta-700 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-frambuesa-500/10 flex items-center justify-center">
-              <Sparkles className="text-frambuesa-500" size={20} />
+            <div className="w-11 h-11 rounded-lg bg-azul-500/10 flex items-center justify-center">
+              <Sparkles className="text-azul-400" size={20} />
             </div>
             <div>
               <p className="font-display text-xl font-bold text-tinta-100">{suscripcion.plan}</p>
@@ -153,7 +153,7 @@ export default function Suscripcion() {
                 className="h-full rounded-full"
                 style={{
                   width: `${Math.min(100, (suscripcion.diasRestantes / 30) * 100)}%`,
-                  background: 'linear-gradient(90deg, #e11d74, #fb923c)',
+                  background: 'linear-gradient(90deg, #2f66f0, #22d3ee)',
                 }}
               />
             </div>
@@ -185,7 +185,7 @@ export default function Suscripcion() {
                 <div
                   key={p.id}
                   className={`rounded-xl border p-5 flex flex-col ${
-                    esActual ? 'border-frambuesa-500 bg-frambuesa-500/5' : 'border-tinta-700 bg-tinta-900'
+                    esActual ? 'border-azul-500 bg-azul-500/5' : 'border-tinta-700 bg-tinta-900'
                   }`}
                 >
                   <p className="font-display font-bold text-tinta-100">{p.nombre}</p>
@@ -197,7 +197,7 @@ export default function Suscripcion() {
                     disabled={procesando || esActual}
                     className={`mt-5 w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed ${
                       esActual
-                        ? 'bg-frambuesa-500/15 text-frambuesa-500'
+                        ? 'bg-azul-500/15 text-azul-300'
                         : 'bg-gradient-to-b from-azul-600 to-azul-800 text-white border border-white/10 shadow-[0_8px_24px_-6px_rgba(11,22,51,0.9)] hover:from-azul-500 hover:to-azul-700'
                     }`}
                   >
