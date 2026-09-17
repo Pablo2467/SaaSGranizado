@@ -2,6 +2,10 @@
 
 SaaS de gestión para granizaderos: productos, insumos (inventario), pedidos, empleados, suscripción y reportes de ganancias. Multi-tenant (cada empresa ve solo sus propios datos).
 
+Correo: pablo2@test.com
+
+Contraseña: Pablo12345
+
 ## Tabla de contenido
 
 - [Stack tecnológico](#stack-tecnológico)
